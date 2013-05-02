@@ -56,19 +56,19 @@ module Rouge
       OPERATOR               = / \+     | &      | \+=    | &=     | &&
                                | ==     | \!=    | \(     | \)     | -
                                | \|     | -=     | \|=    | \|\|   | <
-                               | <=     | \[     | \]     | \*     | ^
-                               | \*=    | ^=     | <-     | >      | >=
+                               | <=     | \[     | \]     | \*     | \^
+                               | \*=    | \^=    | <-     | >      | >=
                                | \{     | \}     | \/     | <<     | \/=
                                | <<=    | \+\+   | =      | :=     | ,
                                | ;      | %      | >>     | %=     | >>=
                                | --     | \!     | \.\.\. | \.     | :
-                               | &^     | &^=
+                               | &\^    | &\^=
                                /x
 
       # Integer literals
 
-      DECIMAL_LIT            = /[0-9]#{DECIMAL_DIGIT}/
-      OCTAL_LIT              = /0#{OCTAL_DIGIT}/
+      DECIMAL_LIT            = /[0-9]#{DECIMAL_DIGIT}*/
+      OCTAL_LIT              = /0#{OCTAL_DIGIT}*/
       HEX_LIT                = /0[xX]#{HEX_DIGIT}+/
       INT_LIT                = /#{DECIMAL_LIT}|#{OCTAL_LIT}|#{HEX_LIT}/
 
@@ -100,11 +100,22 @@ module Rouge
 
       # String literals
 
-      RAW_STRING_LIT         = /`(?:#{UNICODE_CHAR}|#{NEWLINE})`/
-      INTERPRETED_STRING_LIT = /"(?:#{UNICODE_VALUE}|#{BYTE_VALUE})"/
+      RAW_STRING_LIT         = /`(?:#{UNICODE_CHAR}|#{NEWLINE})*`/
+      INTERPRETED_STRING_LIT = /"(?:#{UNICODE_VALUE}|#{BYTE_VALUE})*"/
       STRING_LIT             = /#{RAW_STRING_LIT}|#{INTERPRETED_STRING_LIT}/
 
       state :root do
+        rule(COMMENT,       "Comment")
+        rule(/;/,           "Generic")
+        rule(KEYWORD,       "Keyword")
+        rule(OPERATOR,      "Operator")
+        rule(INT_LIT,       "Literal.Number")
+        rule(FLOAT_LIT,     "Literal.Number")
+        rule(IMAGINARY_LIT, "Literal.Number")
+        rule(CHAR_LIT,      "Literal.String.Char")
+        rule(STRING_LIT,    "Literal.String")
+        rule(IDENTIFIER,    "Name")
+        rule(WHITE_SPACE,   "Other")
       end
     end
   end
