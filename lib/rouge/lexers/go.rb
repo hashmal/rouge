@@ -1,10 +1,10 @@
 module Rouge
   module Lexers
     class Go < RegexLexer
-      desc 'go'
+      desc 'The Go programming language'
       tag 'go'
-      aliases 'go'
-      filenames '*.???'
+      aliases 'go', 'golang'
+      filenames '*.go'
 
       mimetypes 'text/x-go', 'application/x-go'
 
@@ -17,4 +17,3 @@ module Rouge
     end
   end
 end
-
