@@ -34,13 +34,10 @@ module Rouge
       GENERAL_COMMENT        = /\/\*(?:(?!\*\/).)*\*\//m
       COMMENT                = /#{LINE_COMMENT}|#{GENERAL_COMMENT}/
 
-      # Identifiers
-
-      IDENTIFIER             = /#{LETTER}(?:#{LETTER}|#{UNICODE_DIGIT})*/
-
       # Keywords
 
-      KEYWORD                = / break       | default     | func
+      KEYWORD                = /\b(?:
+                                 break       | default     | func
                                | interface   | select      | case
                                | defer       | go          | map
                                | struct      | chan        | else
@@ -49,20 +46,29 @@ module Rouge
                                | range       | type        | continue
                                | for         | import      | return
                                | var
-                               /x
+                               )\b/x
+
+      # Identifiers
+
+      IDENTIFIER             = / (?!#{KEYWORD})
+                                 #{LETTER}(?:#{LETTER}|#{UNICODE_DIGIT})* /x
 
       # Operators and delimiters
 
       OPERATOR               = / \+     | &      | \+=    | &=     | &&
-                               | ==     | \!=    | \(     | \)     | -
+                               | ==     | \!=                      | -
                                | \|     | -=     | \|=    | \|\|   | <
-                               | <=     | \[     | \]     | \*     | \^
+                               | <=                       | \*     | \^
                                | \*=    | \^=    | <-     | >      | >=
-                               | \{     | \}     | \/     | <<     | \/=
-                               | <<=    | \+\+   | =      | :=     | ,
-                               | ;      | %      | >>     | %=     | >>=
+                                                 | \/     | <<     | \/=
+                               | <<=    | \+\+   | =      | :=
+                                        | %      | >>     | %=     | >>=
                                | --     | \!     | \.\.\. | \.     | :
                                | &\^    | &\^=
+                               /x
+
+      SEPARATOR              = / \(     | \)     | \[     | \]     | \{
+                               | \}     | ,      | ;
                                /x
 
       # Integer literals
@@ -70,7 +76,7 @@ module Rouge
       DECIMAL_LIT            = /[0-9]#{DECIMAL_DIGIT}*/
       OCTAL_LIT              = /0#{OCTAL_DIGIT}*/
       HEX_LIT                = /0[xX]#{HEX_DIGIT}+/
-      INT_LIT                = /#{DECIMAL_LIT}|#{OCTAL_LIT}|#{HEX_LIT}/
+      INT_LIT                = /#{HEX_LIT}|#{DECIMAL_LIT}|#{OCTAL_LIT}/
 
       # Floating-point literals
 
@@ -97,25 +103,72 @@ module Rouge
       HEX_BYTE_VALUE         = /\\x#{HEX_DIGIT}{2}/
       BYTE_VALUE             = /#{OCTAL_BYTE_VALUE}|#{HEX_BYTE_VALUE}/
       CHAR_LIT               = /'(?:#{UNICODE_VALUE}|#{BYTE_VALUE})'/
+      ESCAPE_SEQUENCE        = / #{ESCAPED_CHAR}
+                               | #{LITTLE_U_VALUE}
+                               | #{BIG_U_VALUE}
+                               /x
 
       # String literals
 
       RAW_STRING_LIT         = /`(?:#{UNICODE_CHAR}|#{NEWLINE})*`/
-      INTERPRETED_STRING_LIT = /"(?:#{UNICODE_VALUE}|#{BYTE_VALUE})*"/
+      INTERPRETED_STRING_LIT = / "(?: (?!")
+                                      (?: #{UNICODE_VALUE} | #{BYTE_VALUE} )
+                                  )*" /x
       STRING_LIT             = /#{RAW_STRING_LIT}|#{INTERPRETED_STRING_LIT}/
 
+      # Predeclared identifiers
+
+      PREDECLARED_TYPES      = /\b(?:
+                                 bool       | byte       | complex64
+                               | complex128 | error      | float32
+                               | float64    | int8       | int16
+                               | int32      | int64      | int
+                               | rune       | string     | uint8
+                               | uint16     | uint32     | uint64
+                               | uintptr    | uint
+      	                       )\b/x
+
+      PREDECLARED_CONSTANTS  = /\b(?:true|false|iota|nil)\b/
+
+      PREDECLARED_FUNCTIONS  = /\b(?:
+                                 append  | cap     | close   | complex
+                               | copy    | delete  | imag    | len
+                               | make    | new     | panic   | print
+                               | println | real    | recover
+                               )\b/x
+
+      state :simple_tokens do
+        rule(COMMENT,               "Comment")
+        rule(KEYWORD,               "Keyword")
+        rule(PREDECLARED_TYPES,     "Keyword.Type")
+        rule(PREDECLARED_FUNCTIONS, "Name.Builtin")
+        rule(PREDECLARED_CONSTANTS, "Name.Constant")
+        rule(IMAGINARY_LIT,         "Literal.Number")
+        rule(FLOAT_LIT,             "Literal.Number")
+        rule(INT_LIT,               "Literal.Number")
+        rule(CHAR_LIT,              "Literal.String.Char")
+        rule(OPERATOR,              "Operator")
+        rule(SEPARATOR,             "Punctuation")
+        rule(IDENTIFIER,            "Name")
+        rule(WHITE_SPACE,           "Other")
+      end
+
       state :root do
-        rule(COMMENT,       "Comment")
-        rule(/;/,           "Generic")
-        rule(KEYWORD,       "Keyword")
-        rule(OPERATOR,      "Operator")
-        rule(INT_LIT,       "Literal.Number")
-        rule(FLOAT_LIT,     "Literal.Number")
-        rule(IMAGINARY_LIT, "Literal.Number")
-        rule(CHAR_LIT,      "Literal.String.Char")
-        rule(STRING_LIT,    "Literal.String")
-        rule(IDENTIFIER,    "Name")
-        rule(WHITE_SPACE,   "Other")
+        mixin :simple_tokens
+
+        rule(/`/,  "Literal.String", :raw_string)
+        rule(/"/,  "Literal.String", :interpreted_string)
+      end
+
+      state :interpreted_string do
+        rule(ESCAPE_SEQUENCE, "Literal.String.Escape")
+        rule(/"/,  "Literal.String", :pop!)
+        rule(/./,  "Literal.String")
+      end
+
+      state :raw_string do
+        rule(/`/,  "Literal.String", :pop!)
+        rule(/./m, "Literal.String")
       end
     end
   end
