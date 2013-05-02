@@ -5,7 +5,7 @@ describe Rouge::Lexers::Go do
     include Support::Guessing
 
     it 'guesses by filename' do
-      assert_guess :filename => 'foo.???'
+      assert_guess :filename => 'foo.go'
     end
 
     it 'guesses by mimetype' do
