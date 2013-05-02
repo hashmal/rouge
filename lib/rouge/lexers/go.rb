@@ -104,6 +104,7 @@ module Rouge
       ESCAPE_SEQUENCE        = / #{ESCAPED_CHAR}
                                | #{LITTLE_U_VALUE}
                                | #{BIG_U_VALUE}
+                               | #{HEX_BYTE_VALUE}
                                /x
 
       # String literals
@@ -154,19 +155,20 @@ module Rouge
       state :root do
         mixin :simple_tokens
 
-        rule(/`/,  "Literal.String", :raw_string)
-        rule(/"/,  "Literal.String", :interpreted_string)
+        rule(/`/,             "Literal.String", :raw_string)
+        rule(/"/,             "Literal.String", :interpreted_string)
       end
 
       state :interpreted_string do
         rule(ESCAPE_SEQUENCE, "Literal.String.Escape")
-        rule(/"/,  "Literal.String", :pop!)
-        rule(/./,  "Literal.String")
+        rule(/\\./,           "Error")
+        rule(/"/,             "Literal.String", :pop!)
+        rule(/./,             "Literal.String")
       end
 
       state :raw_string do
-        rule(/`/,  "Literal.String", :pop!)
-        rule(/./m, "Literal.String")
+        rule(/`/,             "Literal.String", :pop!)
+        rule(/./m,            "Literal.String")
       end
     end
   end
