@@ -103,34 +103,6 @@ module Rouge
         protected true false nil __FILE__ __LINE__
       )
 
-      builtins_g = %w(
-        Array Float Integer String __id__ __send__ abort ancestors
-        at_exit autoload binding callcc caller catch chomp chop
-        class_eval class_variables clone const_defined\? const_get
-        const_missing const_set constants display dup eval exec exit
-        extend fail fork format freeze getc gets global_variables gsub
-        hash id included_modules inspect instance_eval instance_method
-        instance_methods instance_variable_get instance_variable_set
-        instance_variables lambda load local_variables loop method
-        method_missing methods module_eval name object_id open p
-        print printf private_class_method private_instance_methods
-        private_methods proc protected_instance_methods protected_methods
-        public_class_method public_instance_methods public_methods putc
-        puts raise rand readline readlines require scan select self send
-        set_trace_func singleton_methods sleep split sprintf srand sub
-        syscall system taint test throw to_a to_s trace_var trap untaint
-        untrace_var warn
-      )
-
-      builtins_q = %w(
-        autoload block_given const_defined eql equal frozen
-        include instance_of is_a iterator kind_of method_defined
-        nil private_method_defined protected_method_defined
-        public_method_defined respond_to tainted
-      )
-
-      builtins_b = %w(chomp chop exit gsub sub)
-
       start do
         push :expr_start
         @heredoc_queue = []
@@ -156,11 +128,6 @@ module Rouge
 
         rule /def\b/, 'Keyword', :funcname
         rule /class\b/, 'Keyword', :classname
-
-        rule /(?:#{builtins_q.join('|')})\?/, 'Name.Builtin', :expr_start
-        rule /(?:#{builtins_b.join('|')})!/,  'Name.Builtin', :expr_start
-        rule /(?<!\.)(?:#{builtins_g.join('|')})\b/,
-          'Name.Builtin', :method_call
 
         rule /__END__/, 'Comment.Preproc', :end_part
 
@@ -190,8 +157,6 @@ module Rouge
         mixin :has_heredocs
 
         rule /[A-Z][a-zA-Z0-9_]+/, 'Name.Constant', :method_call
-        rule /(\.|::)([a-z_]\w*[!?]?|[*%&^`~+-\/\[<>=])/,
-          'Name.Function', :expr_start
         rule /[a-zA-Z_]\w*[?!]/, 'Name', :expr_start
         rule /[a-zA-Z_]\w*/, 'Name', :method_call
         rule /\[|\]|\*\*|<<?|>>?|>=|<=|<=>|=~|={3}|!~|&&?|\|\||\.{1,3}/,
