@@ -1,0 +1,44 @@
+-- A comment.
+
+-- Symbol literals
+
+   egg foo+ -name +bar _10
+
+-- Operators
+
+   + - * / @$%&^
+
+-- Quoted symbol literals
+
+   :foo
+
+-- Number literals
+   1
+   42
+   3.14
+   -10
+
+-- Character literals
+
+   'a
+   '\n
+
+-- String literals
+   "hello"
+   "\"hello\nworld\""
+
+-- Lists
+   []
+   [1 2 3]
+
+-- Prefix sugar
+   ()
+   (foo)
+
+-- Reserves
+   -> foo
+   => bar
+   <- egg
+
+-- Booleans
+   TRUE FALSE

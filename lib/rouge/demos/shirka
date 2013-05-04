@@ -1,0 +1,16 @@
+-- Operation computing |n|^0.5 + 5*n^3
+(=> f)
+  [ -> n
+    n abs 0.5 ^ n 3 ^ 5 * + ]
+
+-- Ask the human to enter 11 numbers
+"Please enter 11 numbers:" puts
+[]
+(11 times)
+  [ get-value cons ]
+
+-- Apply `f' and display the result
+(each)
+  [ f >> 400 >
+    (if) [ [ << "Overflow!" puts ]
+           [                puts ] ] ]
