@@ -46,8 +46,6 @@ module Rouge
       end
 
       state :root do
-        mixin :tokens
-
         rule(/"/, "Literal.String", :string)
 
         rule(/(#{RESERVE})(#{WHITE_SPACE})(#{SYMBOL_LIT})/) do |m|
@@ -55,6 +53,8 @@ module Rouge
           token("Other",         m[2])
           token("Name.Function", m[3])
         end
+
+        mixin :tokens
       end
 
       state :string do

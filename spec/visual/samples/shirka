@@ -36,9 +36,9 @@
    (foo)
 
 -- Reserves
-   -> foo
-   => bar
-   <- egg
+   -> foo (-> foo)
+   => bar (=> bar)
+   <- egg (<- egg)
 
 -- Booleans
    TRUE FALSE
